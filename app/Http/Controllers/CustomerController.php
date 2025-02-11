@@ -6,6 +6,7 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
 {
@@ -54,9 +55,15 @@ class CustomerController extends Controller
             'company_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $validated['user_id'] = auth()->id();
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('customer-logos', 'public');
+            $validated['logo_path'] = $path;
+        }
 
         Customer::create($validated);
 
@@ -104,7 +111,18 @@ class CustomerController extends Controller
             'company_name' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($customer->logo_path) {
+                Storage::disk('public')->delete($customer->logo_path);
+            }
+            
+            $path = $request->file('logo')->store('customer-logos', 'public');
+            $validated['logo_path'] = $path;
+        }
 
         $customer->update($validated);
 
@@ -119,6 +137,11 @@ class CustomerController extends Controller
     {
         if (!auth()->user()->hasRole('admin') && $customer->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        // Delete logo if exists
+        if ($customer->logo_path) {
+            Storage::disk('public')->delete($customer->logo_path);
         }
 
         $customer->delete();

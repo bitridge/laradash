@@ -6,6 +6,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SeoLogController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,20 +24,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
 
     Route::resource('customers', CustomerController::class);
     Route::resource('projects', ProjectController::class);
@@ -45,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Add standalone SEO logs route
     Route::get('seo-logs', [SeoLogController::class, 'allLogs'])->name('seo-logs.index')->middleware('permission:view seo logs');
+
+    // Add report routes
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 
     // Add user management routes for admin only
     Route::resource('users', UserController::class)->middleware('role:admin');

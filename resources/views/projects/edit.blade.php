@@ -9,9 +9,37 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
-                    <form method="POST" action="{{ route('projects.update', $project) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('projects.update', $project) }}" class="space-y-6" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+
+                        <!-- Current Logo -->
+                        <div>
+                            <x-input-label :value="__('Current Logo')" class="mb-2" />
+                            @if($project->logo_path)
+                                <img src="{{ Storage::disk('public')->url($project->logo_path) }}" 
+                                     alt="Project Logo" 
+                                     class="w-32 h-32 object-contain border rounded-lg mb-4">
+                            @else
+                                <p class="text-gray-500 mb-4">No logo uploaded</p>
+                            @endif
+                        </div>
+
+                        <!-- Logo Upload -->
+                        <div>
+                            <x-input-label for="logo" :value="__('Update Logo')" />
+                            <input type="file" id="logo" name="logo" accept="image/*" 
+                                class="mt-1 block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100"/>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Supported formats: JPEG, PNG, JPG, GIF. Maximum size: 2MB
+                            </p>
+                            <x-input-error :messages="$errors->get('logo')" class="mt-2" />
+                        </div>
 
                         <!-- Customer -->
                         <div>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" fill="#f3f4f6"/>
+    <path d="M100 60c-22.091 0-40 17.909-40 40s17.909 40 40 40 40-17.909 40-40-17.909-40-40-40zm0 15c13.807 0 25 11.193 25 25s-11.193 25-25 25-25-11.193-25-25 11.193-25 25-25z" fill="#9ca3af"/>
+    <text x="100" y="150" text-anchor="middle" font-family="Arial" font-size="24" fill="#4b5563">Company</text>
+</svg> 

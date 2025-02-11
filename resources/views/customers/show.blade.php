@@ -14,6 +14,15 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    <!-- Company Logo -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('Company Logo') }}</h3>
+                        <img src="{{ $customer->logo_url }}" 
+                             alt="{{ $customer->name }} Logo" 
+                             class="w-48 h-48 object-contain border rounded-lg"
+                             onerror="this.onerror=null; this.src='{{ url('images/default-company-logo.svg') }}';">
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h3 class="text-lg font-medium text-gray-900">Basic Information</h3>

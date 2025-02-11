@@ -16,38 +16,21 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <div class="flex items-center">
-                        <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                            {{ __('Customers') }}
-                        </x-nav-link>
-                        @can('create customers')
-                        <a href="{{ route('customers.create') }}" class="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                            New
-                        </a>
-                        @endcan
-                    </div>
+                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                        {{ __('Customers') }}
+                    </x-nav-link>
 
-                    <div class="flex items-center">
-                        <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
-                            {{ __('Projects') }}
-                        </x-nav-link>
-                        @can('create projects')
-                        <a href="{{ route('projects.create') }}" class="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                            New
-                        </a>
-                        @endcan
-                    </div>
+                    <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
+                        {{ __('Projects') }}
+                    </x-nav-link>
 
-                    <div class="flex items-center">
-                        <x-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
-                            {{ __('SEO Logs') }}
-                        </x-nav-link>
-                        @can('create seo logs')
-                        <a href="{{ route('projects.index', ['action' => 'new_log']) }}" class="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                            New
-                        </a>
-                        @endcan
-                    </div>
+                    <x-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
+                        {{ __('SEO Logs') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                        {{ __('Reports') }}
+                    </x-nav-link>
 
                     @role('admin')
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
@@ -110,38 +93,21 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            <div class="flex items-center justify-between">
-                <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
-                    {{ __('Customers') }}
-                </x-responsive-nav-link>
-                @can('create customers')
-                <a href="{{ route('customers.create') }}" class="mr-4 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                    New
-                </a>
-                @endcan
-            </div>
+            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                {{ __('Customers') }}
+            </x-responsive-nav-link>
 
-            <div class="flex items-center justify-between">
-                <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
-                    {{ __('Projects') }}
-                </x-responsive-nav-link>
-                @can('create projects')
-                <a href="{{ route('projects.create') }}" class="mr-4 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                    New
-                </a>
-                @endcan
-            </div>
+            <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
+                {{ __('Projects') }}
+            </x-responsive-nav-link>
 
-            <div class="flex items-center justify-between">
-                <x-responsive-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
-                    {{ __('SEO Logs') }}
-                </x-responsive-nav-link>
-                @can('create seo logs')
-                <a href="{{ route('projects.index', ['action' => 'new_log']) }}" class="mr-4 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
-                    New
-                </a>
-                @endcan
-            </div>
+            <x-responsive-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
+                {{ __('SEO Logs') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                {{ __('Reports') }}
+            </x-responsive-nav-link>
 
             @role('admin')
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">

@@ -31,39 +31,40 @@ trait WithPermissions
             'create projects',
             'edit projects',
             'delete projects',
-            'manage roles',
-            'manage users',
             'view seo logs',
             'create seo logs',
             'edit seo logs',
-            'delete seo logs'
+            'delete seo logs',
+            'manage users',
+            'manage roles',
+            'generate reports'
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Create roles and assign permissions
+        // Create admin role with all permissions
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $adminRole->syncPermissions(Permission::all());
 
-        $customerRole = Role::firstOrCreate(['name' => 'customer', 'guard_name' => 'web']);
-        $customerRole->syncPermissions([
-            'view customers',
-            'view projects',
-            'create projects',
-            'edit projects',
-            'delete projects',
-            'view seo logs'
-        ]);
-
+        // Create SEO provider role with specific permissions
         $seoProviderRole = Role::firstOrCreate(['name' => 'seo provider', 'guard_name' => 'web']);
         $seoProviderRole->syncPermissions([
+            'view customers',
             'view projects',
             'view seo logs',
             'create seo logs',
             'edit seo logs',
-            'delete seo logs'
+            'generate reports'
+        ]);
+
+        // Create customer role with limited permissions
+        $customerRole = Role::firstOrCreate(['name' => 'customer', 'guard_name' => 'web']);
+        $customerRole->syncPermissions([
+            'view projects',
+            'view seo logs',
+            'generate reports'
         ]);
     }
 } 

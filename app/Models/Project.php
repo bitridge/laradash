@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Project extends Model
 {
@@ -20,6 +21,7 @@ class Project extends Model
         'status',
         'customer_id',
         'user_id',
+        'logo_path',
     ];
 
     protected $casts = [
@@ -77,5 +79,17 @@ class Project extends Model
     public function seoLogs(): HasMany
     {
         return $this->hasMany(SeoLog::class);
+    }
+
+    /**
+     * Get the logo URL.
+     */
+    public function getLogoUrlAttribute(): string
+    {
+        if ($this->logo_path && Storage::disk('public')->exists($this->logo_path)) {
+            return Storage::disk('public')->url($this->logo_path);
+        }
+        
+        return asset('images/default-project-logo.png');
     }
 } 

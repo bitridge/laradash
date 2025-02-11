@@ -7,6 +7,7 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -40,9 +41,10 @@ class ProjectController extends Controller
      */
     public function create(): View
     {
-        $customers = Customer::where('user_id', auth()->id())
-            ->orderBy('name')
-            ->get();
+        // If user is admin, show all customers, otherwise show only user's customers
+        $customers = auth()->user()->hasRole('admin') 
+            ? Customer::orderBy('name')->get()
+            : Customer::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('projects.create', compact('customers'));
     }
@@ -59,9 +61,15 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:pending,in_progress,completed,on_hold',
             'customer_id' => 'required|exists:customers,id',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $validated['user_id'] = auth()->id();
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('project-logos', 'public');
+            $validated['logo_path'] = $path;
+        }
 
         // Verify the customer belongs to the authenticated user
         $customer = Customer::findOrFail($validated['customer_id']);
@@ -96,9 +104,10 @@ class ProjectController extends Controller
             abort(403);
         }
 
-        $customers = Customer::where('user_id', auth()->id())
-            ->orderBy('name')
-            ->get();
+        // If user is admin, show all customers, otherwise show only user's customers
+        $customers = auth()->user()->hasRole('admin') 
+            ? Customer::orderBy('name')->get()
+            : Customer::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('projects.edit', compact('project', 'customers'));
     }
@@ -119,7 +128,18 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:pending,in_progress,completed,on_hold',
             'customer_id' => 'required|exists:customers,id',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($project->logo_path) {
+                Storage::disk('public')->delete($project->logo_path);
+            }
+            
+            $path = $request->file('logo')->store('project-logos', 'public');
+            $validated['logo_path'] = $path;
+        }
 
         // Verify the customer belongs to the authenticated user
         $customer = Customer::findOrFail($validated['customer_id']);
@@ -140,6 +160,11 @@ class ProjectController extends Controller
     {
         if (!auth()->user()->hasRole('admin') && $project->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        // Delete logo if exists
+        if ($project->logo_path) {
+            Storage::disk('public')->delete($project->logo_path);
         }
 
         $project->delete();

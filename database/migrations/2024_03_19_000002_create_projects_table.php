@@ -15,6 +15,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed', 'on_hold'])->default('pending');
+            $table->string('logo_path')->nullable();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();

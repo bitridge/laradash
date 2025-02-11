@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->text('address')->nullable();
             $table->text('notes')->nullable();
+            $table->string('logo_path')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

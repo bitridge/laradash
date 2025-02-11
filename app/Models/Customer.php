@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Customer extends Model
 {
@@ -20,6 +21,7 @@ class Customer extends Model
         'address',
         'notes',
         'user_id',
+        'logo_path',
     ];
 
     /**
@@ -36,5 +38,19 @@ class Customer extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * Get the logo URL.
+     */
+    public function getLogoUrlAttribute(): string
+    {
+        // If we have a logo path and the file exists in storage
+        if ($this->logo_path && Storage::disk('public')->exists($this->logo_path)) {
+            return url('storage/' . $this->logo_path);
+        }
+        
+        // Return the default logo
+        return url('images/default-company-logo.svg');
     }
 } 
