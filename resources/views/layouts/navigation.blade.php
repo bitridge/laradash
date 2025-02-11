@@ -29,7 +29,7 @@
                     @endcan
 
                     @can('view seo logs')
-                    <x-nav-link :href="route('projects.index')" :active="request()->routeIs('*.seo-logs.*')">
+                    <x-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
                         {{ __('SEO Logs') }}
                     </x-nav-link>
                     @endcan
@@ -108,7 +108,7 @@
             @endcan
 
             @can('view seo logs')
-            <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('*.seo-logs.*')">
+            <x-responsive-nav-link :href="route('seo-logs.index')" :active="request()->routeIs('seo-logs.*')">
                 {{ __('SEO Logs') }}
             </x-responsive-nav-link>
             @endcan

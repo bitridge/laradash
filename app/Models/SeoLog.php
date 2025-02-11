@@ -17,14 +17,11 @@ class SeoLog extends Model implements HasMedia
         'title',
         'content',
         'type',
-        'meta_data',
         'project_id',
         'user_id',
     ];
 
-    protected $casts = [
-        'meta_data' => 'array',
-    ];
+    protected $casts = [];
 
     /**
      * Get the project that owns the SEO log.

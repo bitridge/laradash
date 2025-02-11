@@ -42,6 +42,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Add nested resource routes for SEO logs
     Route::resource('projects.seo-logs', SeoLogController::class);
+    
+    // Add standalone SEO logs route
+    Route::get('seo-logs', [SeoLogController::class, 'allLogs'])->name('seo-logs.index')->middleware('permission:view seo logs');
 
     // Add user management routes for admin only
     Route::resource('users', UserController::class)->middleware('role:admin');

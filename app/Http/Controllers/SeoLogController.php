@@ -12,10 +12,33 @@ class SeoLogController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view seo logs')->only(['index', 'show']);
+        $this->middleware('permission:view seo logs')->only(['index', 'show', 'allLogs']);
         $this->middleware('permission:create seo logs')->only(['create', 'store']);
         $this->middleware('permission:edit seo logs')->only(['edit', 'update']);
         $this->middleware('permission:delete seo logs')->only('destroy');
+    }
+
+    /**
+     * Display a listing of all SEO logs.
+     */
+    public function allLogs(): View
+    {
+        $user = auth()->user();
+        
+        // If user is admin, show all logs
+        if ($user->hasRole('admin')) {
+            $logs = SeoLog::with(['project', 'user'])
+                ->latest()
+                ->paginate(10);
+        } else {
+            // For other users, show logs from their projects
+            $logs = SeoLog::whereIn('project_id', $user->projects()->pluck('id'))
+                ->with(['project', 'user'])
+                ->latest()
+                ->paginate(10);
+        }
+
+        return view('seo-logs.all', compact('logs'));
     }
 
     /**
@@ -54,19 +77,21 @@ class SeoLogController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:analysis,optimization,report,other',
-            'meta_data' => 'nullable|array',
-            'attachments.*' => 'nullable|file|max:5120', // 5MB max per file
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
-        $validated['user_id'] = auth()->id();
-        $validated['project_id'] = $project->id;
-
-        $seoLog = SeoLog::create($validated);
+        $seoLog = SeoLog::create([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'type' => $validated['type'],
+            'user_id' => auth()->id(),
+            'project_id' => $project->id,
+        ]);
 
         if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $seoLog->addMedia($file)
-                    ->preservingOriginal()
+            foreach ($request->file('attachments') as $image) {
+                $seoLog->addMedia($image)
                     ->toMediaCollection('attachments');
             }
         }
@@ -91,7 +116,6 @@ class SeoLogController extends Controller
     public function edit(Project $project, SeoLog $seoLog): View
     {
         $this->authorize('update', [$seoLog, $project]);
-
         return view('seo-logs.edit', compact('project', 'seoLog'));
     }
 
@@ -106,29 +130,32 @@ class SeoLogController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'type' => 'required|in:analysis,optimization,report,other',
-            'meta_data' => 'nullable|array',
-            'attachments.*' => 'nullable|file|max:5120', // 5MB max per file
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
             'delete_media' => 'nullable|array',
-            'delete_media.*' => 'exists:media,id'
+            'delete_media.*' => 'integer|exists:media,id'
         ]);
 
-        // Remove deleted media
-        if ($request->has('delete_media')) {
+        $seoLog->update([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'type' => $validated['type'],
+        ]);
+
+        // Handle file deletions
+        if (!empty($request->delete_media)) {
             $seoLog->media()->whereIn('id', $request->delete_media)->delete();
         }
 
-        // Add new attachments
+        // Handle new file uploads
         if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $seoLog->addMedia($file)
-                    ->preservingOriginal()
+            foreach ($request->file('attachments') as $image) {
+                $seoLog->addMedia($image)
                     ->toMediaCollection('attachments');
             }
         }
 
-        $seoLog->update($validated);
-
-        return redirect()->route('projects.seo-logs.index', $project)
+        return redirect()->route('projects.seo-logs.show', [$project, $seoLog])
             ->with('success', 'SEO log updated successfully.');
     }
 
