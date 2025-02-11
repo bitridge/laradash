@@ -12,14 +12,41 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 20px;
             border-bottom: 2px solid #333;
-            padding-bottom: 10px;
         }
-        .project-info {
+        .logos {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 150px;
+            max-height: 80px;
+        }
+        .overview {
             margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .section-content {
+            margin-bottom: 15px;
         }
         .log-entry {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             page-break-inside: avoid;
         }
         .log-title {
@@ -54,19 +81,31 @@
 </head>
 <body>
     <div class="header">
+        <div class="logos">
+            <img src="{{ $project->logo_url }}" alt="Project Logo" class="logo">
+            <img src="{{ $project->customer->logo_url }}" alt="Customer Logo" class="logo">
+        </div>
         <h1>SEO Activity Report</h1>
         <h2>{{ $project->name }}</h2>
     </div>
 
-    <div class="project-info">
-        <p><strong>Customer:</strong> {{ $project->customer->name }}</p>
-        <p><strong>Project Status:</strong> {{ $project->status_label }}</p>
-        <p><strong>Report Generated:</strong> {{ $generatedAt->format('F j, Y, g:i a') }}</p>
+    <div class="overview">
+        <h3>Overview</h3>
+        {!! nl2br(e($overview)) !!}
     </div>
 
-    <h3>SEO Activities Summary</h3>
-    <p>Total Activities Included: {{ $seoLogs->count() }}</p>
+    @foreach($sections as $section)
+        <div class="section">
+            <div class="section-title">{{ $section['title'] }}</div>
+            <div class="section-content">
+                {!! nl2br(e($section['content'])) !!}
+            </div>
+        </div>
+    @endforeach
 
+    <div class="page-break"></div>
+
+    <h3>SEO Activities Log</h3>
     @foreach($seoLogs as $log)
         <div class="log-entry">
             <div class="log-title">{{ $log->title }}</div>
@@ -85,7 +124,7 @@
         </div>
 
         @if(!$loop->last)
-            <div style="border-bottom: 1px solid #ddd; margin: 20px 0;"></div>
+            <hr>
         @endif
     @endforeach
 

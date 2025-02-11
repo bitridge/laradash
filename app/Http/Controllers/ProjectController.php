@@ -92,6 +92,8 @@ class ProjectController extends Controller
             abort(403);
         }
         
+        $project->load(['customer', 'seoLogs.user']);
+        
         return view('projects.show', compact('project'));
     }
 

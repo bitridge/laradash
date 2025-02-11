@@ -45,7 +45,7 @@
                                                 {{ $project->name }}
                                             </a>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $project->customer->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $project->customer?->name ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $project->status_color }}-100 text-{{ $project->status_color }}-800">
                                                 {{ $project->status_label }}

@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
 
     // Add report routes
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/create/{project}', [ReportController::class, 'create'])->name('reports.create');
     Route::post('reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
 
     // Add user management routes for admin only

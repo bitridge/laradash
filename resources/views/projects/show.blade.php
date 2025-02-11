@@ -4,11 +4,45 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Project Details') }}
             </h2>
-            <a href="{{ route('projects.edit', $project) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Edit Project
-            </a>
+            <div class="flex space-x-4">
+                <a href="{{ route('reports.create', $project) }}" 
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Generate Report
+                </a>
+                <a href="{{ route('projects.edit', $project) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Edit Project
+                </a>
+            </div>
         </div>
     </x-slot>
+
+    <!-- Report Preview Modal -->
+    <div id="report-preview-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" role="dialog">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-4/5 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-xl font-semibold">Report Preview</h3>
+                <button id="close-modal" class="text-black close-modal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="report-preview-content" class="mt-4">
+                <!-- Report content will be loaded here -->
+            </div>
+            <div class="flex justify-end gap-4 mt-4">
+                <button id="download-report" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Download PDF
+                </button>
+                <button class="close-modal bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -24,7 +58,7 @@
                                 </div>
                                 <div>
                                     <span class="text-gray-500">Customer:</span>
-                                    <span class="ml-2">{{ $project->customer->name }}</span>
+                                    <span class="ml-2">{{ $project->customer?->name ?? 'N/A' }}</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500">Status:</span>
@@ -137,4 +171,127 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('report-preview-modal');
+            const previewBtn = document.getElementById('preview-report-btn');
+            const closeButtons = document.querySelectorAll('.close-modal');
+            const downloadBtn = document.getElementById('download-report');
+            const form = document.getElementById('generate-report-form');
+            const previewContent = document.getElementById('report-preview-content');
+
+            // Show modal with preview
+            previewBtn.addEventListener('click', function() {
+                // Show loading state
+                previewContent.innerHTML = '<div class="flex justify-center"><div class="loader">Loading...</div></div>';
+                modal.classList.remove('hidden');
+
+                // Fetch preview content
+                const formData = new FormData(form);
+                formData.append('preview', 'true');
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    previewContent.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    previewContent.innerHTML = '<div class="text-red-500 p-4">Error loading preview: ' + error.message + '</div>';
+                });
+            });
+
+            // Close modal when clicking close buttons
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                });
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // Download PDF
+            downloadBtn.addEventListener('click', function() {
+                const formData = new FormData(form);
+                formData.append('download', 'true');
+                
+                const tempForm = document.createElement('form');
+                tempForm.method = 'POST';
+                tempForm.action = form.action;
+                
+                // Add CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                tempForm.appendChild(csrfInput);
+                
+                for (const [key, value] of formData.entries()) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    tempForm.appendChild(input);
+                }
+                
+                document.body.appendChild(tempForm);
+                tempForm.submit();
+                document.body.removeChild(tempForm);
+            });
+
+            // Handle escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #report-preview-modal {
+            z-index: 50;
+        }
+
+        #report-preview-content {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+    </style>
+    @endpush
 </x-app-layout> 
