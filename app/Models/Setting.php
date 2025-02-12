@@ -27,17 +27,8 @@ class Setting extends Model
      */
     public static function get($key, $default = null)
     {
-        try {
-            $value = Cache::rememberForever("settings.{$key}", function () use ($key) {
-                $setting = self::where('key', $key)->first();
-                return $setting ? $setting->value : null;
-            });
-
-            return $value ?? $default;
-        } catch (\Exception $e) {
-            \Log::error("Error getting setting {$key}:", ['error' => $e->getMessage()]);
-            return $default;
-        }
+        $setting = static::where('key', $key)->first();
+        return $setting ? $setting->value : $default;
     }
 
     /**
@@ -53,7 +44,7 @@ class Setting extends Model
         try {
             \Log::info("Setting {$key}:", ['value' => $value, 'group' => $group]);
             
-            $setting = self::updateOrCreate(
+            $setting = static::updateOrCreate(
                 ['key' => $key],
                 [
                     'value' => $value,

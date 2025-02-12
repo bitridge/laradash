@@ -20,6 +20,34 @@
     </div>
 
     <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4">Report Overview</h3>
+        <div class="prose max-w-none">
+            {!! nl2br(e($overview)) !!}
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4">Report Sections</h3>
+        @foreach($sections as $section)
+            <div class="mb-6">
+                <h4 class="text-lg font-medium mb-3">{{ $section['title'] }}</h4>
+                @if(!empty($section['image_path']))
+                    <div class="mb-4">
+                        <img src="{{ $section['image_path'] }}" alt="{{ $section['title'] }} Screenshot" 
+                             class="w-full rounded-lg shadow-md">
+                    </div>
+                @endif
+                <div class="prose max-w-none">
+                    {!! nl2br(e($section['content'])) !!}
+                </div>
+            </div>
+            @if(!$loop->last)
+                <hr class="my-6">
+            @endif
+        @endforeach
+    </div>
+
+    <div class="mb-8">
         <h3 class="text-lg font-semibold mb-4">SEO Activities Summary</h3>
         
         @foreach($seoLogs as $log)

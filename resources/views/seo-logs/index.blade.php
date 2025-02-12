@@ -1,15 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('SEO Logs for') }} {{ $project->name }}
-            </h2>
-            @can('create seo logs')
-            <a href="{{ route('projects.seo-logs.create', $project) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Add SEO Log
-            </a>
-            @endcan
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('All SEO Logs') }}
+        </h2>
     </x-slot>
 
     <div class="py-12">
@@ -27,6 +20,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -37,10 +31,11 @@
                                 @forelse ($logs as $log)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="{{ route('projects.seo-logs.show', [$project, $log]) }}" class="text-blue-600 hover:text-blue-900 hover:underline">
+                                            <a href="{{ route('projects.seo-logs.show', [$project, $log]) }}" class="text-blue-600 hover:text-blue-900">
                                                 {{ $log->title }}
                                             </a>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $project->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                                 {{ $log->type_label }}
@@ -71,7 +66,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center">No SEO logs found.</td>
+                                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No SEO logs found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

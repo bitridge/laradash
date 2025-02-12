@@ -56,18 +56,6 @@
         </div>
     </div>
 
-    <!-- Project Status Distribution -->
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Project Status Distribution</h3>
-                    <canvas id="projectStatusChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Recent Activities -->
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -219,33 +207,6 @@
                         ticks: {
                             stepSize: 1
                         }
-                    }
-                }
-            }
-        });
-
-        // Project Status Distribution Chart
-        new Chart(document.getElementById('projectStatusChart'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(@json($stats['projects_by_status'])).map(status => 
-                    status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')
-                ),
-                datasets: [{
-                    data: Object.values(@json($stats['projects_by_status'])),
-                    backgroundColor: [
-                        'rgb(59, 130, 246)', // blue
-                        'rgb(16, 185, 129)', // green
-                        'rgb(239, 68, 68)',  // red
-                        'rgb(245, 158, 11)'  // yellow
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
                     }
                 }
             }

@@ -38,10 +38,6 @@ class DashboardController extends Controller
                     ->latest()
                     ->take(5)
                     ->get(),
-                'projects_by_status' => Project::selectRaw('status, count(*) as count')
-                    ->groupBy('status')
-                    ->pluck('count', 'status')
-                    ->toArray(),
             ];
         } elseif ($user->hasRole('seo provider')) {
             // Get assigned customers with their projects and SEO logs
@@ -103,15 +99,6 @@ class DashboardController extends Controller
                     ->latest()
                     ->take(5)
                     ->get(),
-                'projects_by_status' => Project::whereHas('customer', function ($query) use ($user) {
-                    $query->whereHas('providers', function ($q) use ($user) {
-                        $q->where('users.id', $user->id);
-                    });
-                })
-                ->selectRaw('status, count(*) as count')
-                ->groupBy('status')
-                ->pluck('count', 'status')
-                ->toArray(),
                 'assigned_customers' => $assignedCustomers,
             ];
         } else { // customer
@@ -127,11 +114,6 @@ class DashboardController extends Controller
                     ->latest()
                     ->take(5)
                     ->get(),
-                'projects_by_status' => Project::where('user_id', $user->id)
-                    ->selectRaw('status, count(*) as count')
-                    ->groupBy('status')
-                    ->pluck('count', 'status')
-                    ->toArray(),
             ];
         }
     }
