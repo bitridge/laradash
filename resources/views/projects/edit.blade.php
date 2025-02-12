@@ -14,30 +14,29 @@
                         @method('PUT')
 
                         <!-- Current Logo -->
-                        <div>
-                            <x-input-label :value="__('Current Logo')" class="mb-2" />
+                        <div class="mb-4">
+                            <x-input-label :value="__('Current Logo')" />
                             @if($project->logo_path)
-                                <img src="{{ Storage::disk('public')->url($project->logo_path) }}" 
-                                     alt="Project Logo" 
-                                     class="w-32 h-32 object-contain border rounded-lg mb-4">
+                                <img src="{{ $project->logo_url }}" alt="Project Logo" class="mt-2 h-20 w-20 object-cover rounded-lg">
                             @else
-                                <p class="text-gray-500 mb-4">No logo uploaded</p>
+                                <p class="text-gray-500 mt-2">No logo uploaded</p>
                             @endif
                         </div>
 
-                        <!-- Logo Upload -->
-                        <div>
+                        <!-- Update Logo -->
+                        <div class="mb-4">
                             <x-input-label for="logo" :value="__('Update Logo')" />
-                            <input type="file" id="logo" name="logo" accept="image/*" 
+                            <input type="file" 
+                                id="logo" 
+                                name="logo" 
+                                accept="image/*"
                                 class="mt-1 block w-full text-sm text-gray-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-md file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100"/>
-                            <p class="mt-1 text-sm text-gray-500">
-                                Supported formats: JPEG, PNG, JPG, GIF. Maximum size: 2MB
-                            </p>
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-md file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-blue-50 file:text-blue-700
+                                    hover:file:bg-blue-100">
+                            <p class="mt-1 text-sm text-gray-500">Supported formats: JPEG, PNG, JPG, GIF. Maximum size: 2MB</p>
                             <x-input-error :messages="$errors->get('logo')" class="mt-2" />
                         </div>
 

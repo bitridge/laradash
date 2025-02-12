@@ -74,7 +74,7 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:pending,in_progress,completed,on_hold',
@@ -82,22 +82,17 @@ class ProjectController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $validated['user_id'] = auth()->id();
+        $project = new Project($validated);
+        $project->user_id = auth()->id();
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('project-logos', 'public');
-            $validated['logo_path'] = $path;
+            $logoPath = $request->file('logo')->store('project-logos', 'public');
+            $project->logo_path = $logoPath;
         }
 
-        // Verify the customer belongs to the authenticated user
-        $customer = Customer::findOrFail($validated['customer_id']);
-        if ($customer->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
-            abort(403);
-        }
+        $project->save();
 
-        Project::create($validated);
-
-        return redirect()->route('projects.index')
+        return redirect()->route('projects.show', $project)
             ->with('success', 'Project created successfully.');
     }
 
@@ -169,26 +164,9 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project): RedirectResponse
     {
-        $user = auth()->user();
-
-        if (!$user->hasRole('admin')) {
-            if ($user->hasRole('seo provider')) {
-                // Check if the provider is assigned to this project's customer
-                $isAssignedToCustomer = $project->customer->providers()
-                    ->where('users.id', $user->id)
-                    ->exists();
-                
-                if (!$isAssignedToCustomer) {
-                    abort(403, 'You are not assigned to this customer.');
-                }
-            } elseif ($project->user_id !== $user->id) {
-                abort(403);
-            }
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|in:pending,in_progress,completed,on_hold',
@@ -198,30 +176,12 @@ class ProjectController extends Controller
 
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
-            if ($project->logo_path) {
+            if ($project->logo_path && Storage::disk('public')->exists($project->logo_path)) {
                 Storage::disk('public')->delete($project->logo_path);
             }
             
-            $path = $request->file('logo')->store('project-logos', 'public');
-            $validated['logo_path'] = $path;
-        }
-
-        // For SEO providers, ensure they can only assign to their assigned customers
-        if ($user->hasRole('seo provider')) {
-            $isValidCustomer = $user->assignedCustomers()
-                ->where('customers.id', $validated['customer_id'])
-                ->exists();
-            
-            if (!$isValidCustomer) {
-                abort(403, 'You can only assign projects to your assigned customers.');
-            }
-        }
-        // For regular users, verify the customer belongs to them
-        elseif (!$user->hasRole('admin') && $project->user_id !== $user->id) {
-            $customer = Customer::findOrFail($validated['customer_id']);
-            if ($customer->user_id !== $user->id) {
-                abort(403);
-            }
+            $logoPath = $request->file('logo')->store('project-logos', 'public');
+            $project->logo_path = $logoPath;
         }
 
         $project->update($validated);
