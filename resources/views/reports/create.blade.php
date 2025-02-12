@@ -13,6 +13,13 @@
                         @csrf
                         <input type="hidden" name="project_id" value="{{ $project->id }}">
 
+                        <!-- Title -->
+                        <div>
+                            <x-input-label for="title" :value="__('Report Title')" />
+                            <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" required />
+                            <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                        </div>
+
                         <!-- Overview Section -->
                         <div>
                             <x-input-label for="overview" :value="__('Report Overview')" />
@@ -124,7 +131,7 @@
             updatePriorities();
         }
 
-        // Function to move a section up or down
+        // Function to move sections up or down
         function moveSection(button, direction) {
             const section = button.closest('.section');
             if (direction === 'up' && section.previousElementSibling) {
@@ -137,22 +144,35 @@
 
         // Function to update priorities
         function updatePriorities() {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach((section, index) => {
+            document.querySelectorAll('.section').forEach((section, index) => {
                 section.dataset.priority = index + 1;
-                const priorityInput = section.querySelector('input[name*="[priority]"]');
-                if (priorityInput) {
-                    priorityInput.value = index + 1;
-                }
+                section.querySelector('input[name$="[priority]"]').value = index + 1;
             });
         }
 
-        // Create initial section when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            if (sectionsContainer && sectionsContainer.children.length === 0) {
-                createSection();
+        // Form submission validation
+        document.getElementById('report-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if at least one section exists
+            if (document.querySelectorAll('.section').length === 0) {
+                alert('Please add at least one section to the report.');
+                return;
             }
+
+            // Check if at least one SEO log is selected
+            const selectedLogs = document.querySelectorAll('input[name="seo_logs[]"]:checked');
+            if (selectedLogs.length === 0) {
+                alert('Please select at least one SEO log to include in the report.');
+                return;
+            }
+
+            // If all validations pass, submit the form
+            this.submit();
         });
+
+        // Create initial section
+        createSection();
     </script>
     @endpush
 </x-app-layout> 

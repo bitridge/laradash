@@ -89,6 +89,16 @@ class ReportController extends Controller
         // Generate PDF
         $pdf = PDF::loadView('reports.pdf', $data);
         
+        // Configure PDF settings
+        $pdf->setPaper('a4');
+        $pdf->setOption('enable-local-file-access', true);
+        $pdf->setOption('encoding', 'UTF-8');
+        $pdf->setOption('font-family', 'helvetica');
+        $pdf->setOption('margin-top', '20');
+        $pdf->setOption('margin-right', '20');
+        $pdf->setOption('margin-bottom', '20');
+        $pdf->setOption('margin-left', '20');
+        
         // Store the PDF file
         $fileName = "seo-report-{$project->id}-" . time() . ".pdf";
         $filePath = "reports/{$fileName}";

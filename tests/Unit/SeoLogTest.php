@@ -44,17 +44,23 @@ class SeoLogTest extends TestCase
 
     public function test_seo_log_has_correct_type_label()
     {
-        $seoLog = SeoLog::factory()->create(['type' => 'analysis']);
-        $this->assertEquals('Analysis', $seoLog->type_label);
+        $seoLog = SeoLog::factory()->create(['type' => 'seo_analytics_reporting']);
+        $this->assertEquals('SEO Analytics & Reporting', $seoLog->type_label);
 
-        $seoLog->type = 'optimization';
-        $this->assertEquals('Optimization', $seoLog->type_label);
+        $seoLog->type = 'technical_seo';
+        $this->assertEquals('Technical SEO', $seoLog->type_label);
 
-        $seoLog->type = 'report';
-        $this->assertEquals('Report', $seoLog->type_label);
+        $seoLog->type = 'on_page_seo';
+        $this->assertEquals('On-Page SEO', $seoLog->type_label);
 
-        $seoLog->type = 'other';
-        $this->assertEquals('Other', $seoLog->type_label);
+        $seoLog->type = 'off_page_seo';
+        $this->assertEquals('Off-Page SEO', $seoLog->type_label);
+
+        $seoLog->type = 'local_seo';
+        $this->assertEquals('Local SEO', $seoLog->type_label);
+
+        $seoLog->type = 'content_seo';
+        $this->assertEquals('Content SEO', $seoLog->type_label);
     }
 
     public function test_seo_log_can_have_media_attachments()

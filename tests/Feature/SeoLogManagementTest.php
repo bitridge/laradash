@@ -71,7 +71,7 @@ class SeoLogManagementTest extends TestCase
             ->post(route('projects.seo-logs.store', $this->project), [
                 'title' => 'Test SEO Log',
                 'content' => 'Test content for SEO log',
-                'type' => 'analysis',
+                'type' => 'seo_analytics_reporting',
                 'meta_data' => [
                     'keywords' => ['test', 'seo'],
                     'rankings' => ['google' => 1, 'bing' => 2]
@@ -104,7 +104,7 @@ class SeoLogManagementTest extends TestCase
             ->put(route('projects.seo-logs.update', [$this->project, $seoLog]), [
                 'title' => 'Updated SEO Log',
                 'content' => 'Updated content',
-                'type' => 'optimization',
+                'type' => 'technical_seo',
                 'meta_data' => ['keywords' => ['updated']]
             ]);
 
@@ -129,7 +129,7 @@ class SeoLogManagementTest extends TestCase
             ->put(route('projects.seo-logs.update', [$this->project, $seoLog]), [
                 'title' => 'Updated SEO Log',
                 'content' => 'Updated content',
-                'type' => 'optimization'
+                'type' => 'technical_seo'
             ]);
 
         $response->assertStatus(403);
@@ -151,7 +151,7 @@ class SeoLogManagementTest extends TestCase
             ->post(route('projects.seo-logs.store', $this->project), [
                 'title' => 'Test SEO Log',
                 'content' => 'Test content',
-                'type' => 'analysis'
+                'type' => 'seo_analytics_reporting'
             ]);
 
         $response->assertStatus(403);
@@ -172,7 +172,7 @@ class SeoLogManagementTest extends TestCase
             ->post(route('projects.seo-logs.store', $this->project), [
                 'title' => 'Admin SEO Log',
                 'content' => 'Admin test content',
-                'type' => 'analysis',
+                'type' => 'seo_analytics_reporting',
                 'meta_data' => ['keywords' => ['admin', 'test']]
             ]);
 
@@ -188,7 +188,7 @@ class SeoLogManagementTest extends TestCase
             ->put(route('projects.seo-logs.update', [$this->project, $this->seoLog]), [
                 'title' => 'Updated by Admin',
                 'content' => 'Updated content',
-                'type' => 'optimization',
+                'type' => 'technical_seo',
                 'meta_data' => ['keywords' => ['updated']]
             ]);
 
@@ -219,7 +219,7 @@ class SeoLogManagementTest extends TestCase
             ->post(route('projects.seo-logs.store', $this->project), [
                 'title' => 'Test with Attachment',
                 'content' => 'Test content',
-                'type' => 'analysis',
+                'type' => 'seo_analytics_reporting',
                 'attachments' => [$file]
             ]);
 

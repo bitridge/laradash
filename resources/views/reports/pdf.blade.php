@@ -2,78 +2,127 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>SEO Report - {{ $project->name }}</title>
+    <title>SEO Activity Report - {{ $project->name }}</title>
     <style>
-        body {
-            font-family: 'DejaVu Sans', sans-serif;
-            padding: 20px;
-            line-height: 1.6;
+        /* Reset default styles */
+        * {
+            font-family: 'Helvetica', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            margin: 2cm;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #000;
+        }
+
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #333;
+            margin-bottom: 2cm;
         }
+
         .logos {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 1cm;
+            text-align: center;
         }
+
         .logo {
-            max-width: 150px;
+            display: inline-block;
             max-height: 80px;
+            margin: 0 1cm;
         }
-        .overview {
-            margin-bottom: 30px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .section {
-            margin-bottom: 30px;
-            page-break-inside: avoid;
-        }
-        .section-title {
-            font-size: 18px;
+
+        h1 {
+            font-size: 24pt;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
+            margin-bottom: 0.5cm;
+            color: #000;
+        }
+
+        h2 {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 1cm;
+            color: #000;
+        }
+
+        h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 1cm;
+            margin-bottom: 0.5cm;
+            color: #000;
+        }
+
+        .overview {
+            margin-bottom: 1.5cm;
+            padding: 0.5cm;
+            background-color: #f8f8f8;
+        }
+
+        .section {
+            margin-bottom: 1cm;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 12pt;
+            margin-bottom: 0.3cm;
+            padding-bottom: 0.2cm;
             border-bottom: 1px solid #ddd;
         }
-        .section-content {
-            margin-bottom: 15px;
-        }
+
         .log-entry {
-            margin-bottom: 25px;
-            page-break-inside: avoid;
+            margin-bottom: 1cm;
+            padding: 0.5cm;
+            background-color: #fff;
+            border: 1px solid #ddd;
         }
+
         .log-title {
-            font-size: 16px;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-            background-color: #f3f4f6;
-            padding: 8px;
+            font-size: 12pt;
+            margin-bottom: 0.3cm;
         }
+
         .log-meta {
-            font-size: 12px;
+            font-size: 10pt;
             color: #666;
-            margin-bottom: 8px;
+            margin-bottom: 0.3cm;
         }
+
         .log-content {
-            font-size: 14px;
-            margin-bottom: 15px;
+            font-size: 11pt;
+            margin-bottom: 0.3cm;
         }
-        .footer {
-            text-align: center;
-            font-size: 12px;
+
+        .log-attachments {
+            font-size: 10pt;
             color: #666;
-            margin-top: 30px;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
+            font-style: italic;
         }
+
+        .footer {
+            position: fixed;
+            bottom: 1cm;
+            left: 2cm;
+            right: 2cm;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 0.3cm;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 1cm 0;
+        }
+
         .page-break {
             page-break-after: always;
         }
