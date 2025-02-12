@@ -7,19 +7,16 @@ use App\Models\Report;
 use App\Models\SeoLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 use PDF;
 
 class ReportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:generate reports', ['only' => ['create', 'generate']]);
-        $this->middleware('permission:download reports', ['only' => ['download']]);
+        $this->middleware('permission:generate reports');
     }
 
-    public function index(): View
+    public function index()
     {
         $user = auth()->user();
         
@@ -50,12 +47,12 @@ class ReportController extends Controller
         return view('reports.index', compact('reports'));
     }
 
-    public function create(Project $project): View
+    public function create(Project $project)
     {
         return view('reports.create', compact('project'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function generate(Request $request)
     {
         $request->validate([
             'project_id' => 'required|exists:projects,id',
@@ -84,6 +81,11 @@ class ReportController extends Controller
             'generatedAt' => now()
         ];
 
+        // If preview requested, return the HTML view
+        if ($request->has('preview')) {
+            return view('reports.preview', $data);
+        }
+
         // Generate PDF
         $pdf = PDF::loadView('reports.pdf', $data);
         
@@ -103,7 +105,7 @@ class ReportController extends Controller
         Storage::disk('public')->put($filePath, $pdf->output());
 
         // Create report record
-        $report = Report::create([
+        Report::create([
             'project_id' => $project->id,
             'user_id' => auth()->id(),
             'title' => $request->title,
@@ -114,14 +116,7 @@ class ReportController extends Controller
             'generated_at' => now(),
         ]);
 
-        return redirect()->route('reports.index')
-            ->with('success', 'Report generated successfully.');
-    }
-
-    public function show(Report $report): View
-    {
-        $this->authorize('view', $report);
-        return view('reports.show', compact('report'));
+        return $pdf->download($fileName);
     }
 
     public function download(Report $report)
@@ -135,22 +130,13 @@ class ReportController extends Controller
                     ->exists();
                 
                 if (!$hasAccess) {
-                    abort(403, 'You do not have permission to download this report.');
+                    abort(403);
                 }
             } elseif ($report->project->user_id !== $user->id) {
-                abort(403, 'You do not have permission to download this report.');
+                abort(403);
             }
         }
 
-        // Check if file exists
-        if (!Storage::disk('public')->exists($report->file_path)) {
-            return back()->with('error', 'Report file not found.');
-        }
-
-        return Storage::disk('public')->download(
-            $report->file_path,
-            "seo-report-{$report->project_id}-{$report->generated_at->timestamp}.pdf"
-        );
+        return Storage::disk('public')->download($report->file_path);
     }
-} 
 } 
