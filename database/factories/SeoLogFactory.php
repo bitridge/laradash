@@ -16,7 +16,14 @@ class SeoLogFactory extends Factory
         return [
             'title' => $this->faker->sentence(),
             'content' => $this->faker->paragraphs(3, true),
-            'type' => $this->faker->randomElement(['analysis', 'optimization', 'report', 'other']),
+            'type' => $this->faker->randomElement([
+                'seo_analytics_reporting',
+                'technical_seo',
+                'on_page_seo',
+                'off_page_seo',
+                'local_seo',
+                'content_seo'
+            ]),
             'meta_data' => [
                 'keywords' => $this->faker->words(5),
                 'rankings' => [

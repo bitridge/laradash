@@ -44,23 +44,47 @@ class DashboardController extends Controller
                     ->toArray(),
             ];
         } elseif ($user->hasRole('seo provider')) {
+            // Get assigned customers with their projects and SEO logs
+            $assignedCustomers = $user->assignedCustomers()
+                ->with(['projects' => function ($query) {
+                    $query->withCount('seoLogs')
+                        ->latest();
+                }, 'projects.seoLogs' => function ($query) {
+                    $query->with('user')
+                        ->latest()
+                        ->take(5);
+                }])
+                ->get();
+
+            // Get all SEO logs from assigned customers' projects
+            $allSeoLogs = SeoLog::whereHas('project', function ($query) use ($user) {
+                $query->whereHas('customer', function ($q) use ($user) {
+                    $q->whereHas('providers', function ($p) use ($user) {
+                        $p->where('users.id', $user->id);
+                    });
+                });
+            });
+
             return [
-                'total_projects' => Project::whereHas('seoLogs', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })->count(),
-                'total_seo_logs' => SeoLog::where('user_id', $user->id)->count(),
-                'recent_activities' => SeoLog::with(['project', 'user'])
-                    ->where('user_id', $user->id)
+                'total_customers' => $assignedCustomers->count(),
+                'total_projects' => $assignedCustomers->sum(function ($customer) {
+                    return $customer->projects->count();
+                }),
+                'total_seo_logs' => $allSeoLogs->count(),
+                'recent_activities' => $allSeoLogs->with(['project.customer', 'user'])
                     ->latest()
                     ->take(5)
                     ->get(),
-                'projects_by_status' => Project::whereHas('seoLogs', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
+                'projects_by_status' => Project::whereHas('customer', function ($query) use ($user) {
+                    $query->whereHas('providers', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
                 })
                 ->selectRaw('status, count(*) as count')
                 ->groupBy('status')
                 ->pluck('count', 'status')
                 ->toArray(),
+                'assigned_customers' => $assignedCustomers,
             ];
         } else { // customer
             return [
@@ -102,8 +126,10 @@ class DashboardController extends Controller
                 ->pluck('count', 'month')
                 ->toArray();
         } elseif ($user->hasRole('seo provider')) {
-            $projectsData = Project::whereHas('seoLogs', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
+            $projectsData = Project::whereHas('customer', function ($query) use ($user) {
+                $query->whereHas('providers', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
             })
             ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')
             ->where('created_at', '>=', $startDate)
@@ -111,12 +137,18 @@ class DashboardController extends Controller
             ->pluck('count', 'month')
             ->toArray();
 
-            $seoLogsData = SeoLog::where('user_id', $user->id)
-                ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')
-                ->where('created_at', '>=', $startDate)
-                ->groupBy('month')
-                ->pluck('count', 'month')
-                ->toArray();
+            $seoLogsData = SeoLog::whereHas('project', function ($query) use ($user) {
+                $query->whereHas('customer', function ($q) use ($user) {
+                    $q->whereHas('providers', function ($p) use ($user) {
+                        $p->where('users.id', $user->id);
+                    });
+                });
+            })
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
         } else { // customer
             $projectsData = Project::where('user_id', $user->id)
                 ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, count(*) as count')

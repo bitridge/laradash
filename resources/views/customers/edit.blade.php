@@ -80,6 +80,23 @@
                             <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
 
+                        <!-- SEO Providers -->
+                        <div class="mt-4">
+                            <x-input-label for="providers" :value="__('Assign SEO Providers')" />
+                            <select id="providers" name="providers[]" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach($providers as $provider)
+                                    <option value="{{ $provider->id }}" 
+                                        {{ in_array($provider->id, $assignedProviderIds) ? 'selected' : '' }}>
+                                        {{ $provider->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-2 text-sm text-gray-500">
+                                Hold Ctrl/Cmd to select multiple providers. Assigned providers will automatically be assigned to this customer's projects.
+                            </p>
+                            <x-input-error class="mt-2" :messages="$errors->get('providers')" />
+                        </div>
+
                         <div class="flex items-center justify-end mt-4">
                             <x-secondary-button onclick="window.history.back()" type="button" class="mr-3">
                                 {{ __('Cancel') }}

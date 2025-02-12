@@ -46,6 +46,16 @@ class Project extends Model
     }
 
     /**
+     * Get the providers assigned to this project.
+     */
+    public function providers()
+    {
+        return $this->belongsToMany(User::class, 'provider_project')
+                    ->withPivot('auto_assigned')
+                    ->withTimestamps();
+    }
+
+    /**
      * Get the status label.
      */
     public function getStatusLabelAttribute(): string

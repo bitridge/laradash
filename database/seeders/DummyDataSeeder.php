@@ -127,7 +127,14 @@ class DummyDataSeeder extends Seeder
                     $seoLog = SeoLog::create([
                         'title' => fake()->sentence,
                         'content' => fake()->paragraphs(3, true),
-                        'type' => fake()->randomElement(['analysis', 'optimization', 'report', 'other']),
+                        'type' => fake()->randomElement([
+                            'seo_analytics_reporting',
+                            'technical_seo',
+                            'on_page_seo',
+                            'off_page_seo',
+                            'local_seo',
+                            'content_seo'
+                        ]),
                         'meta_data' => [
                             'keywords' => fake()->words(5),
                             'rankings' => [

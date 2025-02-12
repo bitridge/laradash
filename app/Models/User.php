@@ -84,4 +84,31 @@ class User extends Authenticatable
     {
         return $this->hasRole('seo provider');
     }
+
+    /**
+     * Get the SEO logs created by the user.
+     */
+    public function seoLogs(): HasMany
+    {
+        return $this->hasMany(SeoLog::class);
+    }
+
+    /**
+     * Get the customers assigned to this provider.
+     */
+    public function assignedCustomers()
+    {
+        return $this->belongsToMany(Customer::class, 'provider_customer')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the projects assigned to this provider.
+     */
+    public function assignedProjects()
+    {
+        return $this->belongsToMany(Project::class, 'provider_project')
+                    ->withPivot('auto_assigned')
+                    ->withTimestamps();
+    }
 }

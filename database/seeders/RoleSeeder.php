@@ -31,6 +31,8 @@ class RoleSeeder extends Seeder
             'delete seo logs',
             'manage users',
             'manage roles',
+            'generate reports',
+            'edit assigned projects'
         ];
 
         foreach ($permissions as $permission) {
@@ -43,11 +45,14 @@ class RoleSeeder extends Seeder
 
         $seoProviderRole = Role::firstOrCreate(['name' => 'seo provider']);
         $seoProviderRole->syncPermissions([
+            'view customers',
             'view projects',
             'view seo logs',
             'create seo logs',
             'edit seo logs',
-            'delete seo logs'
+            'delete seo logs',
+            'generate reports',
+            'edit assigned projects'
         ]);
 
         $customerRole = Role::firstOrCreate(['name' => 'customer']);

@@ -14,8 +14,8 @@ class ProjectController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view projects')->only(['index', 'show']);
-        $this->middleware('permission:create projects')->only(['create', 'store']);
-        $this->middleware('permission:edit projects')->only(['edit', 'update']);
+        $this->middleware('permission:create projects|edit assigned projects')->only(['create', 'store']);
+        $this->middleware('permission:edit projects|edit assigned projects')->only(['edit', 'update']);
         $this->middleware('permission:delete projects')->only('destroy');
     }
 
@@ -24,11 +24,21 @@ class ProjectController extends Controller
      */
     public function index(): View
     {
+        $user = auth()->user();
         $projects = Project::with('customer');
 
-        // If user is not an admin or SEO provider, only show their projects
-        if (!auth()->user()->hasAnyRole(['admin', 'seo provider'])) {
-            $projects->where('user_id', auth()->id());
+        if ($user->hasRole('admin')) {
+            // Admin sees all projects
+        } elseif ($user->hasRole('seo provider')) {
+            // SEO provider sees projects from their assigned customers
+            $projects->whereHas('customer', function($query) use ($user) {
+                $query->whereHas('providers', function($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            });
+        } else {
+            // Customer sees only their projects
+            $projects->where('user_id', $user->id);
         }
 
         $projects = $projects->latest()->paginate(10);
@@ -41,10 +51,18 @@ class ProjectController extends Controller
      */
     public function create(): View
     {
-        // If user is admin, show all customers, otherwise show only user's customers
-        $customers = auth()->user()->hasRole('admin') 
-            ? Customer::orderBy('name')->get()
-            : Customer::where('user_id', auth()->id())->orderBy('name')->get();
+        $user = auth()->user();
+
+        if ($user->hasRole('admin')) {
+            // Admin can see all customers
+            $customers = Customer::orderBy('name')->get();
+        } elseif ($user->hasRole('seo provider')) {
+            // SEO provider can see assigned customers
+            $customers = $user->assignedCustomers()->orderBy('name')->get();
+        } else {
+            // Customer can see only their own customers
+            $customers = Customer::where('user_id', $user->id)->orderBy('name')->get();
+        }
 
         return view('projects.create', compact('customers'));
     }
@@ -88,13 +106,29 @@ class ProjectController extends Controller
      */
     public function show(Project $project): View
     {
-        if (!auth()->user()->hasRole(['admin', 'seo provider']) && $project->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $user = auth()->user();
         
+        if (!$user->hasRole('admin')) {
+            if ($user->hasRole('seo provider')) {
+                // Check if the provider is assigned to this project's customer
+                $isAssignedToCustomer = $project->customer->providers()
+                    ->where('users.id', $user->id)
+                    ->exists();
+                
+                if (!$isAssignedToCustomer) {
+                    abort(403, 'You are not assigned to this customer.');
+                }
+            } elseif ($project->user_id !== $user->id) {
+                abort(403);
+            }
+        }
+
         $project->load(['customer', 'seoLogs.user']);
         
-        return view('projects.show', compact('project'));
+        return view('projects.show', [
+            'project' => $project,
+            'canManageSeoLogs' => $user->hasRole('seo provider')
+        ]);
     }
 
     /**
@@ -102,14 +136,30 @@ class ProjectController extends Controller
      */
     public function edit(Project $project): View
     {
-        if (!auth()->user()->hasRole('admin') && $project->user_id !== auth()->id()) {
-            abort(403);
+        $user = auth()->user();
+
+        if (!$user->hasRole('admin')) {
+            if ($user->hasRole('seo provider')) {
+                // Check if the provider is assigned to this project's customer
+                $isAssignedToCustomer = $project->customer->providers()
+                    ->where('users.id', $user->id)
+                    ->exists();
+                
+                if (!$isAssignedToCustomer) {
+                    abort(403, 'You are not assigned to this customer.');
+                }
+            } elseif ($project->user_id !== $user->id) {
+                abort(403);
+            }
         }
 
-        // If user is admin, show all customers, otherwise show only user's customers
-        $customers = auth()->user()->hasRole('admin') 
-            ? Customer::orderBy('name')->get()
-            : Customer::where('user_id', auth()->id())->orderBy('name')->get();
+        if ($user->hasRole('admin')) {
+            $customers = Customer::orderBy('name')->get();
+        } elseif ($user->hasRole('seo provider')) {
+            $customers = $user->assignedCustomers()->orderBy('name')->get();
+        } else {
+            $customers = Customer::where('user_id', $user->id)->orderBy('name')->get();
+        }
 
         return view('projects.edit', compact('project', 'customers'));
     }
@@ -119,8 +169,21 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project): RedirectResponse
     {
-        if (!auth()->user()->hasRole('admin') && $project->user_id !== auth()->id()) {
-            abort(403);
+        $user = auth()->user();
+
+        if (!$user->hasRole('admin')) {
+            if ($user->hasRole('seo provider')) {
+                // Check if the provider is assigned to this project's customer
+                $isAssignedToCustomer = $project->customer->providers()
+                    ->where('users.id', $user->id)
+                    ->exists();
+                
+                if (!$isAssignedToCustomer) {
+                    abort(403, 'You are not assigned to this customer.');
+                }
+            } elseif ($project->user_id !== $user->id) {
+                abort(403);
+            }
         }
 
         $validated = $request->validate([
@@ -143,15 +206,27 @@ class ProjectController extends Controller
             $validated['logo_path'] = $path;
         }
 
-        // Verify the customer belongs to the authenticated user
-        $customer = Customer::findOrFail($validated['customer_id']);
-        if ($customer->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
-            abort(403);
+        // For SEO providers, ensure they can only assign to their assigned customers
+        if ($user->hasRole('seo provider')) {
+            $isValidCustomer = $user->assignedCustomers()
+                ->where('customers.id', $validated['customer_id'])
+                ->exists();
+            
+            if (!$isValidCustomer) {
+                abort(403, 'You can only assign projects to your assigned customers.');
+            }
+        }
+        // For regular users, verify the customer belongs to them
+        elseif (!$user->hasRole('admin') && $project->user_id !== $user->id) {
+            $customer = Customer::findOrFail($validated['customer_id']);
+            if ($customer->user_id !== $user->id) {
+                abort(403);
+            }
         }
 
         $project->update($validated);
 
-        return redirect()->route('projects.index')
+        return redirect()->route('projects.show', $project)
             ->with('success', 'Project updated successfully.');
     }
 

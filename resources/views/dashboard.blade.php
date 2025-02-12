@@ -81,6 +81,7 @@
                                     <p class="font-medium text-gray-900">{{ $activity->title }}</p>
                                     <p class="text-sm text-gray-500">
                                         Project: {{ $activity->project->name }} |
+                                        Customer: {{ $activity->project->customer->name }} |
                                         By: {{ $activity->user->name }} |
                                         {{ $activity->created_at->diffForHumans() }}
                                     </p>
@@ -92,6 +93,93 @@
             </div>
         </div>
     </div>
+
+    @role('seo provider')
+    <!-- Assigned Customers Section -->
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Assigned Customers</h3>
+                    
+                    @foreach($stats['assigned_customers'] as $customer)
+                    <div class="mb-8 last:mb-0">
+                        <!-- Customer Header -->
+                        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-t-lg border border-gray-200">
+                            <div class="flex items-center space-x-4">
+                                <img src="{{ $customer->logo_url }}" alt="{{ $customer->name }}" class="w-12 h-12 rounded-full object-cover">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{ $customer->name }}</h4>
+                                    <p class="text-sm text-gray-500">{{ $customer->company_name }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">{{ $customer->email }}</p>
+                                <p class="text-sm text-gray-500">{{ $customer->phone }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Projects List -->
+                        <div class="border-x border-b border-gray-200 rounded-b-lg divide-y divide-gray-200">
+                            @foreach($customer->projects as $project)
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h5 class="text-md font-medium text-gray-900">
+                                            <a href="{{ route('projects.show', $project) }}" class="hover:text-blue-600">
+                                                {{ $project->name }}
+                                            </a>
+                                        </h5>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $project->status_color }}-100 text-{{ $project->status_color }}-800">
+                                            {{ $project->status_label }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('projects.seo-logs.create', $project) }}" 
+                                           class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Add SEO Log
+                                        </a>
+                                        <a href="{{ route('projects.show', $project) }}" 
+                                           class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Recent SEO Logs -->
+                                <div class="mt-2">
+                                    <h6 class="text-sm font-medium text-gray-700 mb-2">Recent SEO Logs ({{ $project->seo_logs_count }} total)</h6>
+                                    <div class="space-y-2">
+                                        @forelse($project->seoLogs as $log)
+                                            <div class="bg-gray-50 p-3 rounded-md">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <p class="text-sm font-medium text-gray-900">{{ $log->title }}</p>
+                                                        <p class="text-xs text-gray-500">
+                                                            By {{ $log->user->name }} • 
+                                                            {{ $log->created_at->diffForHumans() }}
+                                                        </p>
+                                                    </div>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $log->type_color }}-100 text-{{ $log->type_color }}-800">
+                                                        {{ $log->type }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <p class="text-sm text-gray-500">No SEO logs yet</p>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endrole
 
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

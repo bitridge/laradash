@@ -12,7 +12,7 @@ class SeoLogController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view seo logs')->only(['index', 'show', 'allLogs']);
+        $this->middleware('permission:view seo logs')->only(['index', 'show']);
         $this->middleware('permission:create seo logs')->only(['create', 'store']);
         $this->middleware('permission:edit seo logs')->only(['edit', 'update']);
         $this->middleware('permission:delete seo logs')->only('destroy');
@@ -27,15 +27,29 @@ class SeoLogController extends Controller
         
         // If user is admin, show all logs
         if ($user->hasRole('admin')) {
-            $logs = SeoLog::with(['project', 'user'])
+            $logs = SeoLog::with(['project.customer', 'user'])
                 ->latest()
                 ->paginate(10);
+        } elseif ($user->hasRole('seo provider')) {
+            // For SEO providers, show logs from their assigned customers' projects
+            $logs = SeoLog::whereHas('project', function ($query) use ($user) {
+                $query->whereHas('customer', function ($q) use ($user) {
+                    $q->whereHas('providers', function ($p) use ($user) {
+                        $p->where('users.id', $user->id);
+                    });
+                });
+            })
+            ->with(['project.customer', 'user'])
+            ->latest()
+            ->paginate(10);
         } else {
-            // For other users, show logs from their projects
-            $logs = SeoLog::whereIn('project_id', $user->projects()->pluck('id'))
-                ->with(['project', 'user'])
-                ->latest()
-                ->paginate(10);
+            // For customers, show logs from their projects
+            $logs = SeoLog::whereHas('project', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['project.customer', 'user'])
+            ->latest()
+            ->paginate(10);
         }
 
         return view('seo-logs.all', compact('logs'));
@@ -76,7 +90,7 @@ class SeoLogController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'type' => 'required|in:analysis,optimization,report,other',
+            'type' => 'required|in:seo_analytics_reporting,technical_seo,on_page_seo,off_page_seo,local_seo,content_seo',
             'attachments' => 'nullable|array',
             'attachments.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
@@ -111,11 +125,48 @@ class SeoLogController extends Controller
     }
 
     /**
+     * Check if the user can access the project
+     */
+    private function checkProjectAccess(Project $project)
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasRole('admin')) {
+            if ($user->hasRole('seo provider')) {
+                // Check if the provider is assigned to this project's customer
+                $isAssignedToCustomer = $project->customer->providers()
+                    ->where('users.id', $user->id)
+                    ->exists();
+                
+                if (!$isAssignedToCustomer) {
+                    abort(403, 'You are not assigned to this customer.');
+                }
+            } elseif ($project->user_id !== $user->id) {
+                abort(403);
+            }
+        }
+    }
+
+    /**
+     * Check if the user can modify the SEO log
+     */
+    private function checkSeoLogAccess(SeoLog $seoLog)
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasRole('admin') && $seoLog->user_id !== $user->id) {
+            abort(403, 'You can only modify your own SEO logs.');
+        }
+    }
+
+    /**
      * Show the form for editing the specified SEO log.
      */
     public function edit(Project $project, SeoLog $seoLog): View
     {
-        $this->authorize('update', [$seoLog, $project]);
+        $this->checkProjectAccess($project);
+        $this->checkSeoLogAccess($seoLog);
+
         return view('seo-logs.edit', compact('project', 'seoLog'));
     }
 
@@ -124,38 +175,19 @@ class SeoLogController extends Controller
      */
     public function update(Request $request, Project $project, SeoLog $seoLog): RedirectResponse
     {
-        $this->authorize('update', [$seoLog, $project]);
+        $this->checkProjectAccess($project);
+        $this->checkSeoLogAccess($seoLog);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'type' => 'required|in:analysis,optimization,report,other',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
-            'delete_media' => 'nullable|array',
-            'delete_media.*' => 'integer|exists:media,id'
+            'type' => 'required|in:seo_analytics_reporting,technical_seo,on_page_seo,off_page_seo,local_seo,content_seo',
+            'meta_data' => 'nullable|array'
         ]);
 
-        $seoLog->update([
-            'title' => $validated['title'],
-            'content' => $validated['content'],
-            'type' => $validated['type'],
-        ]);
+        $seoLog->update($validated);
 
-        // Handle file deletions
-        if (!empty($request->delete_media)) {
-            $seoLog->media()->whereIn('id', $request->delete_media)->delete();
-        }
-
-        // Handle new file uploads
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $image) {
-                $seoLog->addMedia($image)
-                    ->toMediaCollection('attachments');
-            }
-        }
-
-        return redirect()->route('projects.seo-logs.show', [$project, $seoLog])
+        return redirect()->route('projects.show', $project)
             ->with('success', 'SEO log updated successfully.');
     }
 
@@ -164,14 +196,12 @@ class SeoLogController extends Controller
      */
     public function destroy(Project $project, SeoLog $seoLog): RedirectResponse
     {
-        $this->authorize('delete', [$seoLog, $project]);
+        $this->checkProjectAccess($project);
+        $this->checkSeoLogAccess($seoLog);
 
-        // Delete associated media
-        $seoLog->media()->delete();
-        
         $seoLog->delete();
 
-        return redirect()->route('projects.seo-logs.index', $project)
+        return redirect()->route('projects.show', $project)
             ->with('success', 'SEO log deleted successfully.');
     }
 } 

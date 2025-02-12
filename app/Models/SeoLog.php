@@ -48,9 +48,12 @@ class SeoLog extends Model implements HasMedia
     public function getTypeLabelAttribute(): string
     {
         return match($this->type) {
-            'analysis' => 'Analysis',
-            'optimization' => 'Optimization',
-            'report' => 'Report',
+            'seo_analytics_reporting' => 'SEO Analytics & Reporting',
+            'technical_seo' => 'Technical SEO',
+            'on_page_seo' => 'On-Page SEO',
+            'off_page_seo' => 'Off-Page SEO',
+            'local_seo' => 'Local SEO',
+            'content_seo' => 'Content SEO',
             default => 'Other',
         };
     }

@@ -40,10 +40,12 @@
                         <div>
                             <x-input-label for="type" :value="__('Type')" />
                             <select id="type" name="type" class="block mt-1 w-full rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <option value="analysis" {{ old('type') == 'analysis' ? 'selected' : '' }}>Analysis</option>
-                                <option value="optimization" {{ old('type') == 'optimization' ? 'selected' : '' }}>Optimization</option>
-                                <option value="report" {{ old('type') == 'report' ? 'selected' : '' }}>Report</option>
-                                <option value="other" {{ old('type') == 'other' ? 'selected' : '' }}>Other</option>
+                                <option value="seo_analytics_reporting" {{ old('type') == 'seo_analytics_reporting' ? 'selected' : '' }}>SEO Analytics & Reporting</option>
+                                <option value="technical_seo" {{ old('type') == 'technical_seo' ? 'selected' : '' }}>Technical SEO</option>
+                                <option value="on_page_seo" {{ old('type') == 'on_page_seo' ? 'selected' : '' }}>On-Page SEO</option>
+                                <option value="off_page_seo" {{ old('type') == 'off_page_seo' ? 'selected' : '' }}>Off-Page SEO</option>
+                                <option value="local_seo" {{ old('type') == 'local_seo' ? 'selected' : '' }}>Local SEO</option>
+                                <option value="content_seo" {{ old('type') == 'content_seo' ? 'selected' : '' }}>Content SEO</option>
                             </select>
                             <x-input-error :messages="$errors->get('type')" class="mt-2" />
                         </div>

@@ -49,8 +49,15 @@ class Customer extends Model
         if ($this->logo_path && Storage::disk('public')->exists($this->logo_path)) {
             return url('storage/' . $this->logo_path);
         }
-        
-        // Return the default logo
-        return url('images/default-company-logo.svg');
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+
+    /**
+     * Get the providers assigned to this customer.
+     */
+    public function providers()
+    {
+        return $this->belongsToMany(User::class, 'provider_customer')
+                    ->withTimestamps();
     }
 } 
