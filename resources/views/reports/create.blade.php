@@ -28,8 +28,7 @@
                             <div class="sections space-y-4">
                                 <!-- Sections will be added here -->
                             </div>
-                            <button type="button" id="add-section" 
-                                class="inline-flex items-center px-4 py-2 bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:border-indigo-700 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            <button type="button" onclick="createSection()" class="inline-flex items-center px-4 py-2 bg-indigo-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-600 active:bg-indigo-700 focus:outline-none focus:border-indigo-700 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
@@ -73,82 +72,86 @@
     </div>
 
     @push('scripts')
-    <script>
+    <script type="text/javascript">
+        // Global variables
+        const sectionsContainer = document.querySelector('.sections');
+        let sectionCount = 0;
+
+        // Function to create a new section
+        function createSection() {
+            console.log('Creating new section...'); // Debug log
+            const section = document.createElement('div');
+            section.className = 'section bg-gray-50 p-4 rounded-lg relative mb-4';
+            section.dataset.priority = sectionCount + 1;
+
+            section.innerHTML = `
+                <div class="absolute right-4 top-4 flex items-center gap-2">
+                    <button type="button" onclick="moveSection(this, 'up')" class="move-up text-gray-500 hover:text-gray-700">↑</button>
+                    <button type="button" onclick="moveSection(this, 'down')" class="move-down text-gray-500 hover:text-gray-700">↓</button>
+                    <button type="button" onclick="deleteSection(this)" class="delete-section text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="space-y-4 pt-8">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Section Title</label>
+                        <input type="text" name="sections[${sectionCount}][title]" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Content</label>
+                        <textarea name="sections[${sectionCount}][content]" rows="3" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                            required></textarea>
+                    </div>
+                    <input type="hidden" name="sections[${sectionCount}][priority]" value="${sectionCount + 1}">
+                </div>
+            `;
+
+            sectionsContainer.appendChild(section);
+            sectionCount++;
+            updatePriorities();
+            console.log('Section created. Total sections:', sectionCount); // Debug log
+        }
+
+        // Function to delete a section
+        function deleteSection(button) {
+            const section = button.closest('.section');
+            section.remove();
+            updatePriorities();
+        }
+
+        // Function to move a section up or down
+        function moveSection(button, direction) {
+            const section = button.closest('.section');
+            if (direction === 'up' && section.previousElementSibling) {
+                section.parentNode.insertBefore(section, section.previousElementSibling);
+            } else if (direction === 'down' && section.nextElementSibling) {
+                section.parentNode.insertBefore(section.nextElementSibling, section);
+            }
+            updatePriorities();
+        }
+
+        // Function to update priorities
+        function updatePriorities() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach((section, index) => {
+                section.dataset.priority = index + 1;
+                const priorityInput = section.querySelector('input[name*="[priority]"]');
+                if (priorityInput) {
+                    priorityInput.value = index + 1;
+                }
+            });
+        }
+
+        // Create initial section when the page loads
         document.addEventListener('DOMContentLoaded', function() {
-            const sectionsContainer = document.querySelector('.sections');
-            const addSectionButton = document.getElementById('add-section');
-            let sectionCount = 0;
-
-            function createSection() {
-                const section = document.createElement('div');
-                section.className = 'section bg-gray-50 p-4 rounded-lg relative';
-                section.dataset.priority = sectionCount + 1;
-
-                section.innerHTML = `
-                    <div class="absolute right-4 top-4 flex items-center gap-2">
-                        <button type="button" class="move-up text-gray-500 hover:text-gray-700">↑</button>
-                        <button type="button" class="move-down text-gray-500 hover:text-gray-700">↓</button>
-                        <button type="button" class="delete-section text-red-500 hover:text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Section Title</label>
-                            <input type="text" name="sections[${sectionCount}][title]" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
-                                required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Content</label>
-                            <textarea name="sections[${sectionCount}][content]" rows="3" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
-                                required></textarea>
-                        </div>
-                        <input type="hidden" name="sections[${sectionCount}][priority]" value="${sectionCount + 1}">
-                    </div>
-                `;
-
-                sectionsContainer.appendChild(section);
-                sectionCount++;
-                updatePriorities();
-
-                // Add event listeners for the new section
-                const newSection = sectionsContainer.lastElementChild;
-                newSection.querySelector('.delete-section').addEventListener('click', function() {
-                    newSection.remove();
-                    updatePriorities();
-                });
-
-                newSection.querySelector('.move-up').addEventListener('click', function() {
-                    if (newSection.previousElementSibling) {
-                        newSection.parentNode.insertBefore(newSection, newSection.previousElementSibling);
-                        updatePriorities();
-                    }
-                });
-
-                newSection.querySelector('.move-down').addEventListener('click', function() {
-                    if (newSection.nextElementSibling) {
-                        newSection.parentNode.insertBefore(newSection.nextElementSibling, newSection);
-                        updatePriorities();
-                    }
-                });
+            if (sectionsContainer && sectionsContainer.children.length === 0) {
+                createSection();
             }
-
-            function updatePriorities() {
-                const sections = document.querySelectorAll('.section');
-                sections.forEach((section, index) => {
-                    section.dataset.priority = index + 1;
-                    section.querySelector('input[name*="[priority]"]').value = index + 1;
-                });
-            }
-
-            addSectionButton.addEventListener('click', createSection);
-
-            // Add initial section
-            createSection();
         });
     </script>
     @endpush

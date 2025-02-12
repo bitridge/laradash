@@ -8,6 +8,7 @@ use App\Http\Controllers\SeoLogController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,12 @@ Route::middleware('auth')->group(function () {
 
     // Add user management routes for admin only
     Route::resource('users', UserController::class)->middleware('role:admin');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/test-email', [SettingController::class, 'testEmail'])->name('settings.test-email');
 });
 
 require __DIR__.'/auth.php';
