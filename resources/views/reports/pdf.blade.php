@@ -20,19 +20,23 @@
         }
 
         .header {
+            position: relative;
             text-align: center;
             margin-bottom: 2cm;
         }
 
-        .logos {
-            margin-bottom: 1cm;
-            text-align: center;
+        .project-logo {
+            display: block;
+            margin: 0 auto;
+            max-height: 240px;
+            margin-bottom: 1.5cm;
         }
 
-        .logo {
-            display: inline-block;
-            max-height: 80px;
-            margin: 0 1cm;
+        .customer-logo {
+            position: absolute;
+            top: 0;
+            right: 0;
+            max-height: 40px;
         }
 
         h1 {
@@ -130,10 +134,8 @@
 </head>
 <body>
     <div class="header">
-        <div class="logos">
-            <img src="{{ $project->logo_url }}" alt="Project Logo" class="logo">
-            <img src="{{ $project->customer->logo_url }}" alt="Customer Logo" class="logo">
-        </div>
+        <img src="{{ $project->logo_url }}" alt="Project Logo" class="project-logo">
+        <img src="{{ $project->customer->logo_url }}" alt="Customer Logo" class="customer-logo">
         <h1>SEO Activity Report</h1>
         <h2>{{ $project->name }}</h2>
     </div>
@@ -159,7 +161,7 @@
         <div class="log-entry">
             <div class="log-title">{{ $log->title }}</div>
             <div class="log-meta">
-                Type: {{ $log->type_label }} | Date: {{ $log->created_at->format('M d, Y') }} | By: {{ $log->user->name }}
+                Type: {{ $log->type_label }} | Date: {{ $log->created_at->format('M d, Y') }}
             </div>
             <div class="log-content">
                 {!! nl2br(e($log->content)) !!}

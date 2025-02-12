@@ -32,6 +32,7 @@ class RoleSeeder extends Seeder
             'manage users',
             'manage roles',
             'generate reports',
+            'download reports',
             'edit assigned projects'
         ];
 
@@ -52,6 +53,7 @@ class RoleSeeder extends Seeder
             'edit seo logs',
             'delete seo logs',
             'generate reports',
+            'download reports',
             'edit assigned projects'
         ]);
 
@@ -62,7 +64,8 @@ class RoleSeeder extends Seeder
             'create projects',
             'edit projects',
             'delete projects',
-            'view seo logs'
+            'view seo logs',
+            'download reports'
         ]);
 
         // Create admin user

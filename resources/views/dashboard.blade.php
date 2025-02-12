@@ -94,92 +94,82 @@
         </div>
     </div>
 
-    @role('seo provider')
-    <!-- Assigned Customers Section -->
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-6">Assigned Customers</h3>
-                    
-                    @foreach($stats['assigned_customers'] as $customer)
-                    <div class="mb-8 last:mb-0">
-                        <!-- Customer Header -->
-                        <div class="flex items-center justify-between bg-gray-50 p-4 rounded-t-lg border border-gray-200">
-                            <div class="flex items-center space-x-4">
-                                <img src="{{ $customer->logo_url }}" alt="{{ $customer->name }}" class="w-12 h-12 rounded-full object-cover">
-                                <div>
-                                    <h4 class="text-lg font-medium text-gray-900">{{ $customer->name }}</h4>
-                                    <p class="text-sm text-gray-500">{{ $customer->company_name }}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm text-gray-500">{{ $customer->email }}</p>
-                                <p class="text-sm text-gray-500">{{ $customer->phone }}</p>
-                            </div>
-                        </div>
+    @if(auth()->user()->hasRole('seo provider') && isset($stats['assigned_customers']))
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Assigned Customers</h2>
 
-                        <!-- Projects List -->
-                        <div class="border-x border-b border-gray-200 rounded-b-lg divide-y divide-gray-200">
-                            @foreach($customer->projects as $project)
-                            <div class="p-4">
-                                <div class="flex items-center justify-between mb-4">
+                        @forelse($stats['assigned_customers'] as $customer)
+                            <div class="mb-8 bg-gray-50 rounded-lg p-6">
+                                <!-- Customer Header -->
+                                <div class="flex items-center mb-4">
+                                    <img src="{{ $customer['logo_url'] }}" alt="{{ $customer['name'] }} Logo" class="w-12 h-12 rounded-full object-cover mr-4">
                                     <div>
-                                        <h5 class="text-md font-medium text-gray-900">
-                                            <a href="{{ route('projects.show', $project) }}" class="hover:text-blue-600">
-                                                {{ $project->name }}
-                                            </a>
-                                        </h5>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $project->status_color }}-100 text-{{ $project->status_color }}-800">
-                                            {{ $project->status_label }}
-                                        </span>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('projects.seo-logs.create', $project) }}" 
-                                           class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                            Add SEO Log
-                                        </a>
-                                        <a href="{{ route('projects.show', $project) }}" 
-                                           class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                            View Details
-                                        </a>
+                                        <h3 class="text-xl font-semibold text-gray-800">{{ $customer['name'] }}</h3>
+                                        <div class="text-sm text-gray-600">
+                                            <p>{{ $customer['company_name'] }}</p>
+                                            <p>{{ $customer['email'] }} | {{ $customer['phone'] }}</p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <!-- Recent SEO Logs -->
-                                <div class="mt-2">
-                                    <h6 class="text-sm font-medium text-gray-700 mb-2">Recent SEO Logs ({{ $project->seo_logs_count }} total)</h6>
-                                    <div class="space-y-2">
-                                        @forelse($project->seoLogs as $log)
-                                            <div class="bg-gray-50 p-3 rounded-md">
-                                                <div class="flex justify-between items-start">
-                                                    <div>
-                                                        <p class="text-sm font-medium text-gray-900">{{ $log->title }}</p>
-                                                        <p class="text-xs text-gray-500">
-                                                            By {{ $log->user->name }} • 
-                                                            {{ $log->created_at->diffForHumans() }}
-                                                        </p>
-                                                    </div>
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $log->type_color }}-100 text-{{ $log->type_color }}-800">
-                                                        {{ $log->type }}
+                                <!-- Projects -->
+                                <div class="space-y-4">
+                                    @foreach($customer['projects'] as $project)
+                                        <div class="bg-white rounded-lg shadow p-4">
+                                            <div class="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h4 class="text-lg font-semibold text-gray-800">{{ $project['name'] }}</h4>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $project['status_color'] }}-100 text-{{ $project['status_color'] }}-800">
+                                                        {{ $project['status'] }}
                                                     </span>
                                                 </div>
+                                                <a href="{{ route('projects.show', $project['id']) }}" class="text-blue-600 hover:text-blue-800">View Project</a>
                                             </div>
-                                        @empty
-                                            <p class="text-sm text-gray-500">No SEO logs yet</p>
-                                        @endforelse
-                                    </div>
+
+                                            <!-- SEO Logs -->
+                                            <div class="mt-4">
+                                                <h5 class="text-sm font-medium text-gray-700 mb-2">Recent SEO Logs ({{ $project['seo_logs_count'] }} total)</h5>
+                                                <div class="space-y-2">
+                                                    @foreach($project['seo_logs']->take(3) as $log)
+                                                        <div class="flex items-center justify-between text-sm">
+                                                            <div class="flex items-center space-x-2">
+                                                                <span class="font-medium">{{ $log['title'] }}</span>
+                                                                <span class="text-gray-500">{{ $log['type'] }}</span>
+                                                                @if($log['has_attachments'])
+                                                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                                                    </svg>
+                                                                @endif
+                                                            </div>
+                                                            <div class="text-gray-500">{{ $log['created_at'] }}</div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                @if($project['seo_logs_count'] > 3)
+                                                    <div class="mt-2 text-right">
+                                                        <a href="{{ route('projects.seo-logs.index', $project['id']) }}" class="text-sm text-blue-600 hover:text-blue-800">
+                                                            View all logs →
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
-                            @endforeach
-                        </div>
+                        @empty
+                            <div class="text-center py-8 text-gray-500">
+                                <p>No customers are currently assigned to you.</p>
+                            </div>
+                        @endforelse
                     </div>
-                    @endforeach
                 </div>
             </div>
         </div>
-    </div>
-    @endrole
+    @endif
 
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

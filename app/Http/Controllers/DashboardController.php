@@ -50,11 +50,39 @@ class DashboardController extends Controller
                     $query->withCount('seoLogs')
                         ->latest();
                 }, 'projects.seoLogs' => function ($query) {
-                    $query->with('user')
-                        ->latest()
-                        ->take(5);
+                    $query->with(['user', 'media'])
+                        ->latest();
                 }])
-                ->get();
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->name,
+                        'email' => $customer->email,
+                        'phone' => $customer->phone,
+                        'company_name' => $customer->company_name,
+                        'logo_url' => $customer->logo_url,
+                        'projects' => $customer->projects->map(function ($project) {
+                            return [
+                                'id' => $project->id,
+                                'name' => $project->name,
+                                'status' => $project->status_label,
+                                'status_color' => $project->status_color,
+                                'seo_logs_count' => $project->seo_logs_count,
+                                'seo_logs' => $project->seoLogs->map(function ($log) {
+                                    return [
+                                        'id' => $log->id,
+                                        'title' => $log->title,
+                                        'type' => $log->type_label,
+                                        'created_at' => $log->created_at->format('M d, Y'),
+                                        'created_by' => $log->user->name,
+                                        'has_attachments' => $log->media->isNotEmpty()
+                                    ];
+                                })
+                            ];
+                        })
+                    ];
+                });
 
             // Get all SEO logs from assigned customers' projects
             $allSeoLogs = SeoLog::whereHas('project', function ($query) use ($user) {
@@ -68,7 +96,7 @@ class DashboardController extends Controller
             return [
                 'total_customers' => $assignedCustomers->count(),
                 'total_projects' => $assignedCustomers->sum(function ($customer) {
-                    return $customer->projects->count();
+                    return count($customer['projects']);
                 }),
                 'total_seo_logs' => $allSeoLogs->count(),
                 'recent_activities' => $allSeoLogs->with(['project.customer', 'user'])
