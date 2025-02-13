@@ -1,0 +1,57 @@
+{
+    "core": {
+        "min_php_version": "8.0",
+        "min_mysql_version": "5.7"
+    },
+    "permissions": {
+        ".env": "644",
+        "bootstrap/": "755",
+        "bootstrap/cache/": "755",
+        "storage/": "755",
+        "storage/app/": "755",
+        "storage/framework/": "755",
+        "storage/framework/cache/": "755",
+        "storage/framework/sessions/": "755",
+        "storage/framework/views/": "755",
+        "storage/logs/": "755"
+    },
+    "requirements": {
+        "php": [
+            "bcmath",
+            "ctype",
+            "curl",
+            "dom",
+            "fileinfo",
+            "json",
+            "mbstring",
+            "openssl",
+            "pcre",
+            "pdo",
+            "pdo_mysql",
+            "tokenizer",
+            "xml",
+            "zip"
+        ],
+        "apache": [
+            "mod_rewrite"
+        ]
+    },
+    "php_options": {
+        "allow_url_fopen": true,
+        "file_uploads": true,
+        "memory_limit": "128M"
+    },
+    "final": {
+        "key": true,
+        "publish": true,
+        "storage_link": true,
+        "migrate": true
+    },
+    "link": {
+        "php_version": "https://laravel.com/docs/10.x/deployment#server-requirements",
+        "php_environment": "https://laravel.com/docs/10.x/deployment#server-requirements",
+        "php_options": "https://laravel.com/docs/10.x/deployment#server-configuration",
+        "mysql_version": "https://laravel.com/docs/10.x/database#introduction",
+        "folder_permissions": "https://laravel.com/docs/10.x/deployment#directory-configuration"
+    }
+}
