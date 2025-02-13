@@ -9,6 +9,12 @@ APP_PATH="/home/seowork/htdocs/seowork.technotch.dev/laradash"
 # Navigate to the application directory
 cd $APP_PATH
 
+# Configure git safe directory
+git config --global --add safe.directory $APP_PATH
+
+# Pull latest changes
+git pull
+
 # Install composer dependencies
 composer install --no-dev --optimize-autoloader
 
