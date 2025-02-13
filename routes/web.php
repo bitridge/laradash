@@ -19,11 +19,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
 });
 
-// Installer Routes
-Route::group(['prefix' => 'install'], function () {
-    Route::get('/', [App\Http\Controllers\InstallerController::class, 'index'])->name('installer.index');
-    Route::get('/test', [App\Http\Controllers\InstallerController::class, 'test'])->name('installer.test');
-    Route::post('/install', [App\Http\Controllers\InstallerController::class, 'install'])->name('installer.install');
-});
-
 require __DIR__.'/auth.php';
